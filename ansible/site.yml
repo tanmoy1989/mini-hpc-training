@@ -1,0 +1,247 @@
+---
+- name: Prepare mini-HPC nodes
+  hosts: cluster
+  become: true
+
+  tasks:
+    - name: Update APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install common HPC packages
+      ansible.builtin.apt:
+        name:
+          - build-essential
+          - slurm-wlm
+          - munge
+          - openmpi-bin
+          - libopenmpi-dev
+          - prometheus-node-exporter
+        state: present
+
+    - name: Enable and start Munge
+      ansible.builtin.service:
+        name: munge
+        state: started
+        enabled: true
+
+    - name: Enable and start Prometheus Node Exporter
+      ansible.builtin.service:
+        name: prometheus-node-exporter
+        state: started
+        enabled: true
+
+    - name: Read Munge key from node01
+      ansible.builtin.slurp:
+        src: /etc/munge/munge.key
+      register: munge_key
+      when: inventory_hostname == "node01"
+      no_log: true
+
+    - name: Distribute shared Munge key to node02
+      ansible.builtin.copy:
+        content: "{{ hostvars['node01']['munge_key']['content'] | b64decode }}"
+        dest: /etc/munge/munge.key
+        owner: munge
+        group: munge
+        mode: '0400'
+      when: inventory_hostname == "node02"
+      no_log: true
+      notify: Restart Munge
+
+    - name: Apply pending Munge restart before configuring Slurm
+      ansible.builtin.meta: flush_handlers
+
+    - name: Configure mini-HPC node hostname resolution
+      ansible.builtin.blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED MINI-HPC HOSTS"
+        block: |
+          {{ hostvars['node01']['ansible_host'] }} node01
+          {{ hostvars['node02']['ansible_host'] }} node02
+
+    - name: Generate SSH key pair for vagrant
+      community.crypto.openssh_keypair:
+        path: /home/vagrant/.ssh/id_ed25519
+        type: ed25519
+        owner: vagrant
+        group: vagrant
+        mode: '0600'
+      become: true
+
+    - name: Read SSH public key from each node
+      ansible.builtin.slurp:
+        src: /home/vagrant/.ssh/id_ed25519.pub
+      register: ssh_public_key
+
+    - name: Authorize SSH key from the other node
+      ansible.posix.authorized_key:
+        user: vagrant
+        state: present
+        key: "{{ hostvars[other_node]['ssh_public_key']['content'] | b64decode }}"
+      vars:
+        other_node: "{{ 'node02' if inventory_hostname == 'node01' else 'node01' }}"
+
+    - name: Create Slurm controller state directory
+      ansible.builtin.file:
+        path: /var/spool/slurmctld
+        state: directory
+        owner: slurm
+        group: slurm
+        mode: '0755'
+      when: inventory_hostname == "node01"
+
+    - name: Create Slurm compute daemon spool directory
+      ansible.builtin.file:
+        path: /var/spool/slurmd
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Distribute Slurm configuration
+      ansible.builtin.copy:
+        src: ../config/slurm.conf
+        dest: /etc/slurm/slurm.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable and start Slurm controller
+      ansible.builtin.service:
+        name: slurmctld
+        state: started
+        enabled: true
+      when: inventory_hostname == "node01"
+
+    - name: Enable and start Slurm compute daemon
+      ansible.builtin.service:
+        name: slurmd
+        state: started
+        enabled: true
+
+    - name: Install Prometheus on controller
+      ansible.builtin.apt:
+        name: prometheus
+        state: present
+      when: inventory_hostname == "node01"
+
+    - name: Deploy Prometheus configuration
+      ansible.builtin.copy:
+        src: ../config/prometheus.yml
+        dest: /etc/prometheus/prometheus.yml
+        owner: root
+        group: root
+        mode: '0644'
+      when: inventory_hostname == "node01"
+      notify: Restart Prometheus
+
+    - name: Enable and restart Prometheus
+      ansible.builtin.service:
+        name: prometheus
+        state: started
+        enabled: true
+      when: inventory_hostname == "node01"
+
+    - name: Install Grafana repository prerequisites
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - wget
+          - gnupg
+        state: present
+      when: inventory_hostname == "node01"
+
+    - name: Create APT keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      when: inventory_hostname == "node01"
+
+    - name: Download Grafana repository signing key
+      ansible.builtin.get_url:
+        url: https://apt.grafana.com/gpg-full.key
+        dest: /etc/apt/keyrings/grafana.asc
+        owner: root
+        group: root
+        mode: '0644'
+      when: inventory_hostname == "node01"
+
+    - name: Add Grafana APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main"
+        filename: grafana
+        state: present
+        update_cache: true
+      when: inventory_hostname == "node01"
+
+    - name: Install Grafana OSS on controller
+      ansible.builtin.apt:
+        name: grafana
+        state: present
+      when: inventory_hostname == "node01"
+
+    - name: Enable and start Grafana
+      ansible.builtin.service:
+        name: grafana-server
+        state: started
+        enabled: true
+      when: inventory_hostname == "node01"
+
+    - name: Provision Grafana Prometheus data source
+      ansible.builtin.copy:
+        src: ../config/grafana-datasource.yml
+        dest: /etc/grafana/provisioning/datasources/mini-hpc.yml
+        owner: root
+        group: grafana
+        mode: '0644'
+      when: inventory_hostname == "node01"
+      notify: Restart Grafana
+
+    - name: Create Grafana dashboard directory
+      ansible.builtin.file:
+        path: /var/lib/grafana/dashboards/mini-hpc
+        state: directory
+        owner: grafana
+        group: grafana
+        mode: '0755'
+      when: inventory_hostname == "node01"
+
+    - name: Provision Grafana dashboard provider
+      ansible.builtin.copy:
+        src: ../config/grafana-dashboard-provider.yml
+        dest: /etc/grafana/provisioning/dashboards/mini-hpc.yml
+        owner: root
+        group: grafana
+        mode: '0644'
+      when: inventory_hostname == "node01"
+      notify: Restart Grafana
+
+    - name: Deploy Mini-HPC Grafana dashboard
+      ansible.builtin.copy:
+        src: ../config/grafana-mini-hpc-dashboard.json
+        dest: /var/lib/grafana/dashboards/mini-hpc/mini-hpc.json
+        owner: grafana
+        group: grafana
+        mode: '0644'
+      when: inventory_hostname == "node01"
+    
+  handlers:
+    - name: Restart Munge
+      ansible.builtin.service:
+        name: munge
+        state: restarted
+
+    - name: Restart Prometheus
+      ansible.builtin.service:
+        name: prometheus
+        state: restarted
+
+    - name: Restart Grafana
+      ansible.builtin.service:
+        name: grafana-server
+        state: restarted

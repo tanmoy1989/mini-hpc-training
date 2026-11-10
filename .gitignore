@@ -1,0 +1,18 @@
+# Vagrant state and generated SSH keys
+.vagrant/
+
+# Generated Ansible inventory
+inventory.ini
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+*.out
+
+# Local secrets
+*.key
+*.pem
+*.secret

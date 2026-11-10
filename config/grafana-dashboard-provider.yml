@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: mini-hpc-training
+    orgId: 1
+    folder: Mini-HPC Training
+    type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards/mini-hpc
