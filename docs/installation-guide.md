@@ -44,6 +44,84 @@ The deployment requests:
 
 Allow additional resources for the host operating system, VMware overhead and virtual machine storage.
 
+### 2.3 Installing prerequisites on Ubuntu
+
+The following instructions are intended for Ubuntu Linux host computers.
+
+#### Install Ansible
+
+```bash
+sudo apt update
+sudo apt install -y ansible
+```
+
+Verify the installation:
+
+```bash
+ansible --version
+ansible-galaxy --version
+```
+
+`ansible-galaxy` is normally included with Ansible and does not require a separate installation.
+
+#### Install Vagrant
+
+Vagrant is maintained by HashiCorp. Follow the official installation instructions for Ubuntu:
+
+[Install HashiCorp Vagrant](https://developer.hashicorp.com/vagrant/install)
+
+After installation, verify:
+
+```bash
+vagrant --version
+```
+
+#### Install VMware Workstation
+
+Install a compatible version of VMware Workstation on your host computer.
+
+The current mini-HPC project uses VMware as its virtualisation provider. Other providers have not yet been tested.
+
+#### Install the Vagrant VMware Utility
+
+The VMware provider requires the Vagrant VMware Utility, which must be installed separately.
+
+Follow the official instructions:
+
+[Vagrant VMware Utility Installation](https://developer.hashicorp.com/vagrant/install/vmware)
+
+#### Install the Vagrant VMware Desktop plugin
+
+Once Vagrant, VMware Workstation and the VMware Utility are installed, run:
+
+```bash
+vagrant plugin install vagrant-vmware-desktop
+```
+
+Verify:
+
+```bash
+vagrant plugin list
+```
+
+The output should include `vagrant-vmware-desktop`.
+
+#### Verify the prerequisites
+
+Before proceeding with the mini-HPC deployment, confirm that the following commands work:
+
+```bash
+vagrant --version
+ansible --version
+ansible-galaxy --version
+python3 --version
+git --version
+```
+
+All required tools must be installed on the **host computer**, not inside the Ubuntu virtual machines.
+
+Once these checks pass, continue with Section 3 to clone the repository and deploy the cluster.
+
 ## 3. Download the project
 
 Open a terminal on the host computer.

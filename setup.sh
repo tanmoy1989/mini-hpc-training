@@ -20,12 +20,36 @@ echo
 echo "=============================================================="
 echo
 
+INSTALL_GUIDE="docs/installation-guide.md"
+
 # Check required commands
 check_command() {
-    if command -v "$1" >/dev/null 2>&1; then
-        echo "[OK] $1 is installed"
+    local cmd="$1"
+
+    if command -v "$cmd" >/dev/null 2>&1; then
+        echo "[OK] $cmd is installed"
     else
-        echo "[ERROR] $1 is not installed"
+        echo "[ERROR] $cmd is not installed"
+        echo
+
+        case "$cmd" in
+            ansible|ansible-galaxy)
+                echo "Install Ansible on Ubuntu using:"
+                echo "  sudo apt update"
+                echo "  sudo apt install -y ansible"
+                echo
+                echo "Note: ansible-galaxy is included with Ansible."
+                ;;
+            vagrant)
+                echo "Install Vagrant using the official HashiCorp instructions."
+                ;;
+            *)
+                echo "Please install $cmd before continuing."
+                ;;
+        esac
+
+        echo
+        echo "For detailed instructions, see: $INSTALL_GUIDE"
         exit 1
     fi
 }
@@ -44,6 +68,11 @@ if vagrant plugin list | grep -q '^vagrant-vmware-desktop '; then
     echo "[OK] Vagrant VMware Desktop plugin is installed"
 else
     echo "[ERROR] Vagrant VMware Desktop plugin is missing"
+    echo "Install it using:"
+    echo "  vagrant plugin install vagrant-vmware-desktop"
+    echo
+    echo "The Vagrant VMware Utility is also required."
+    echo "For instructions, see: $INSTALL_GUIDE"
     exit 1
 fi
 
