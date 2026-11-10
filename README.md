@@ -1,6 +1,6 @@
 # Mini-HPC Training Environment
 
-**A reproducible two-node High Performance Computing (HPC) training cluster using Vagrant, Ansible, Slurm, Prometheus and Grafana.**
+**A reproducible two-node High Performance Computing (HPC) training cluster using VMware, Vagrant, Ansible, Slurm, Prometheus and Grafana.**
 
 **Designed by:**
 
