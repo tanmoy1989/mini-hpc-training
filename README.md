@@ -2,7 +2,15 @@
 
 **A reproducible two-node High Performance Computing (HPC) training cluster using Vagrant, Ansible, Slurm, Prometheus and Grafana.**
 
-**Designed by Dr. Tanmoy Chakraborty**
+**Designed by:**
+
+**Dr. Tanmoy Chakraborty**
+
+Research Software Specialist
+
+Scientific Computing Research Technology Platform
+
+University of Warwick
 
 ## Overview
 
@@ -13,6 +21,10 @@ Participants can deploy their own two-node Ubuntu cluster and learn fundamental 
 The environment is automatically configured using Vagrant and Ansible.
 
 ## Cluster architecture
+
+![Mini-HPC Training Cluster Architecture](images/mini-hpc-architecture.png)
+
+*Architecture of the two-node mini-HPC training environment, showing Vagrant and Ansible automation, VMware virtualisation, Slurm job scheduling, and Prometheus/Grafana monitoring.*
 
 The environment consists of two Ubuntu 24.04 virtual machines:
 
@@ -81,5 +93,11 @@ Slurm accounting, shared storage and advanced cluster management are outside the
 ## Author
 
 **Dr. Tanmoy Chakraborty**
+
+Research Software Specialist
+
+Scientific Computing Research Technology Platform
+
+University of Warwick
 
 GitHub: https://github.com/tanmoy1989

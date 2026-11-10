@@ -7,10 +7,17 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-echo "=========================================="
+echo "=============================================================="
 echo " Mini-HPC Training Environment Deployment"
-echo " Designed by Dr. Tanmoy Chakraborty "
-echo "=========================================="
+echo "=============================================================="
+echo
+echo " Designed by:"
+echo " Dr. Tanmoy Chakraborty"
+echo " Research Software Specialist"
+echo " Scientific Computing Research Technology Platform"
+echo " University of Warwick"
+echo
+echo "=============================================================="
 echo
 
 # Check required commands
