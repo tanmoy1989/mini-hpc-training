@@ -20,6 +20,16 @@ Participants can deploy their own two-node Ubuntu cluster and learn fundamental 
 
 The environment is automatically configured using Vagrant and Ansible.
 
+## Why this project?
+
+The Mini-HPC Training Environment aims to make HPC more accessible through a lightweight, reproducible and low-risk platform for learning and experimentation. **Researchers** can use it as a test bed for developing and validating HPC workflows before moving to production systems. **Research Software Engineers (RSEs)** can reuse and adapt the environment and training materials for their own students and research groups. **Students and early-career researchers** can gain hands-on experience with HPC concepts, while **HPC and Research IT professionals** can explore cluster administration, automation, monitoring and troubleshooting.
+
+Ultimately, the goal is to encourage practical learning, knowledge sharing and wider adoption of HPC technologies.
+
+![Why a Mini-HPC Training Platform?](images/motivation.png)
+
+*Motivation for the Mini-HPC Training Environment and its potential benefits across the research community.*
+
 ## Cluster architecture
 
 ![Mini-HPC Training Cluster Architecture](images/mini-hpc-architecture.png)
