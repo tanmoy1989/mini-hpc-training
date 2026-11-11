@@ -58,6 +58,8 @@ Each VM requests 2 GB RAM and 2 virtual CPUs. The current Slurm configuration al
 - Internet connectivity
 - Sufficient host RAM and disk space for two Ubuntu virtual machines
 
+See **[Installation and Setup Guide](docs/installation-guide.md)** for more details.
+
 The project has been tested using VMware on a Linux host.
 
 ## Quick start
