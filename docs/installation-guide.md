@@ -561,6 +561,166 @@ sudo journalctl -u slurmd -n 30 --no-pager
 
 These commands display recent service logs without changing the system.
 
+### 7.7 VMware networking fails after a Linux kernel update
+
+During deployment, Vagrant may report the following error:
+
+```text
+The VMware "vmnet" devices are failing to start.
+```
+
+This can happen when VMware Workstation's kernel modules (`vmmon` and `vmnet`) are unavailable, particularly after a Linux kernel update or system reboot.
+
+The `vmmon` module is responsible for running VMware virtual machines, while `vmnet` provides VMware virtual networking.
+
+#### Step 1: Check the VMware service
+
+```bash
+sudo systemctl status vmware --no-pager
+```
+
+If VMware is not working, the output may contain:
+
+```text
+Virtual machine monitor - failed
+Virtual ethernet - failed
+```
+
+#### Step 2: Check the VMware kernel modules
+
+Check the current Linux kernel version:
+
+```bash
+uname -r
+```
+
+Check whether the VMware modules are loaded:
+
+```bash
+lsmod | grep -E '^(vmmon|vmnet)\b'
+```
+
+Check whether the modules are available for the running kernel:
+
+```bash
+modinfo vmmon
+modinfo vmnet
+```
+
+If either command reports `Module not found`, the VMware modules may need to be rebuilt.
+
+#### Step 3: Install the required build tools
+
+Ensure that the required compilation tools and matching Linux kernel headers are installed:
+
+```bash
+sudo apt update
+sudo apt install -y build-essential linux-headers-$(uname -r)
+```
+
+The kernel headers must match the currently running kernel.
+
+#### Step 4: Rebuild the VMware kernel modules
+
+Run:
+
+```bash
+sudo vmware-modconfig --console --install-all
+```
+
+This command rebuilds VMware's `vmmon` and `vmnet` modules for the current Linux kernel.
+
+A successful execution should end with messages similar to:
+
+```text
+Starting VMware services:
+   Virtual machine monitor                 done
+   Virtual machine communication interface done
+   VM communication interface socket family done
+   Virtual ethernet                        done
+   VMware Authentication Daemon            done
+   Shared Memory Available                  done
+```
+
+If compilation fails, inspect the errors before proceeding. Some VMware versions may not support newer Linux kernels.
+
+#### Step 5: Start the VMware service
+
+```bash
+sudo systemctl start vmware.service
+```
+
+Verify the service status:
+
+```bash
+systemctl status vmware --no-pager
+```
+
+A successful result may show:
+
+```text
+Active: active (exited)
+```
+
+This is normal for VMware's legacy service managed by systemd.
+
+If the service continues to report a historical failure despite a successful rebuild, the recorded failure state can be cleared using:
+
+```bash
+sudo systemctl reset-failed vmware.service
+```
+
+Note that `reset-failed` does not restart the VMware service.
+
+#### Step 6: Verify VMware networking
+
+Confirm that both VMware kernel modules are loaded:
+
+```bash
+lsmod | grep -E '^(vmmon|vmnet)\b'
+```
+
+Check that the VMware virtual network interfaces exist:
+
+```bash
+ip -br link show | grep vmnet
+```
+
+Typical output includes:
+
+```text
+vmnet1    UNKNOWN
+vmnet8    UNKNOWN
+```
+
+Here, `vmnet1` normally provides host-only networking, while `vmnet8` provides NAT networking.
+
+Finally, verify the service:
+
+```bash
+systemctl is-active vmware
+```
+
+For this legacy service, the expected result after a successful start is:
+
+```text
+active
+```
+
+#### Step 7: Retry the mini-HPC deployment
+
+Once VMware is functioning correctly, return to the mini-HPC project directory and run:
+
+```bash
+./setup.sh
+```
+
+Vagrant should now be able to create and start both Ubuntu virtual machines.
+
+**Important:** Restarting VMware services may affect virtual networking and running virtual machines. Exercise caution when working remotely over SSH, particularly on shared or production hosts.
+
+**Tested recovery:** This procedure successfully restored VMware Workstation networking on an Ubuntu Linux host running kernel `6.8.0-149-generic` during a fresh mini-HPC deployment test on 25 November 2026.
+
 ## 8. Stopping and restarting the cluster
 
 When you finish a training session, you can shut down the two virtual machines without deleting them.
