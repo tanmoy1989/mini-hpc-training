@@ -44,6 +44,10 @@ The deployment requests:
 
 Allow additional resources for the host operating system, VMware overhead and virtual machine storage.
 
+**Host hardware recommendations:** A Linux host with at least **8 GB RAM**, **4 logical CPU threads**, and **30 GB of available disk space** is recommended as a practical minimum. For a smoother experience, **16 GB RAM and 50 GB of available disk space** are preferred. Hardware virtualisation (Intel VT-x or AMD-V) must be enabled.
+
+These are planning recommendations rather than formally tested minimum requirements.
+
 ### 2.3 Installing prerequisites on Ubuntu
 
 The following instructions are intended for Ubuntu Linux host computers.

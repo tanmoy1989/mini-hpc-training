@@ -51,12 +51,22 @@ Each VM requests 2 GB RAM and 2 virtual CPUs. The current Slurm configuration al
 
 ## Prerequisites
 
-- VMware Workstation with a compatible licence
-- Vagrant with the VMware Desktop provider and required utility
-- Ansible and Python 3
+- Linux host machine (Ubuntu recommended)
+- VMware Workstation
+- Vagrant with the VMware Desktop provider and required VMware Utility
+- Ansible
+- Python 3
 - Git
-- Internet connectivity
-- Sufficient host RAM and disk space for two Ubuntu virtual machines
+- **Hardware requirements:**
+  - **RAM:** Minimum 8 GB; 16 GB recommended.
+    - Each virtual machine requires 2 GB RAM (4 GB total).
+    - Additional memory is required for the host operating system and VMware.
+  - **CPU:** Minimum 4 logical CPU threads recommended.
+    - Each virtual machine is configured with 2 virtual CPUs.
+    - Virtual CPUs can share physical CPU resources.
+  - **Disk space:** At least 30 GB of available storage recommended for the two Ubuntu virtual machines, Vagrant images, and associated files.
+  - **Virtualisation:** Hardware virtualisation support enabled (Intel VT-x or AMD-V).
+- Internet connectivity (required to download Vagrant boxes, Ansible collections and software packages)
 
 See **[Installation and Setup Guide](docs/installation-guide.md)** for more details.
 
