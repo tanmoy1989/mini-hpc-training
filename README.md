@@ -112,6 +112,13 @@ This project is intended for educational use on trusted local networks, not prod
 
 Slurm accounting, shared storage and advanced cluster management are outside the scope of the current introductory environment.
 
+## Watch the Mini-HPC deployment
+
+Follow the deployment from `git clone` and `./setup.sh` through to submitting
+a two-node Slurm job and opening Grafana.
+
+![Mini-HPC deployment from setup to the first Slurm job and Grafana dashboard](docs/media/mini-hpc-deployment-overview.gif)
+
 ## Author
 
 **Dr. Tanmoy Chakraborty**
