@@ -349,6 +349,8 @@ The training environment is intended for trusted networks and should not be expo
 
 ### 6.4 Open the monitoring dashboard
 
+**Joining from your laptop?** Follow section 6.5 to open the SSH tunnel, then return here to find the dashboard.
+
 After signing in, navigate to:
 
 **Dashboards → Mini-HPC Training → Mini-HPC Cluster Monitoring**
@@ -364,47 +366,35 @@ The dashboard contains four panels:
 
 Each panel should display separate metrics for `node01:9100` and `node02:9100`.
 
-The dashboard refreshes automatically every 15 seconds.
+The current refresh interval appears beside **Refresh** in the upper-right corner of the dashboard.
 
 Some panels may initially need a few minutes of collected metrics before meaningful graphs appear.
 
 ### 6.5 Access Grafana when connecting remotely
 
-If the mini-HPC environment runs on a remote host, the VMware VM addresses may not be directly accessible from your local computer.
+When the VMs run on a remote workshop host, you can open Grafana in your laptop's browser through SSH. You need SSH access to the host, and the host must be able to reach `node01`.
 
-In this case, use SSH local port forwarding.
+1. **On the workshop host**, run this command from the `mini-hpc-training` repository directory to find the current IP address of the controller VM.
 
-Open a terminal on your **local computer** and run:
+   ```bash
+   vagrant ssh node01 -c 'hostname -I'
+   ```
 
-```bash
-ssh -L 3001:<NODE01_IP>:3000 USER@REMOTE_HOST
-```
+   If you already have a shell on `node01`, run `hostname -I` there. Use the address from your own deployment. It may change when the VMs are recreated.
 
-Replace:
+2. **On your laptop**, open a new local terminal tab. Replace `NODE01_IP` with the address from step 1 and `USER@REMOTE_HOST` with your usual SSH login for the workshop host.
 
-- `<NODE01_IP>` with the controller VM's IP address.
-- `USER` with your username on the remote host.
-- `REMOTE_HOST` with the remote computer's hostname or IP address.
+   ```bash
+   ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:3001:NODE01_IP:3000 USER@REMOTE_HOST
+   ```
 
-For example, if the controller IP is `172.16.15.137`:
+   If you normally select an SSH key with `-i`, include that option before the login name. Leave this terminal open. A successful connection stays quiet.
 
-```bash
-ssh -L 3001:172.16.15.137:3000 username@remote-host.example.org
-```
+3. **In your laptop's browser**, open <http://localhost:3001>. Sign in and follow section 6.4 to open **Mini-HPC Cluster Monitoring**.
 
-Keep this SSH connection open.
+   If port `3001` is already in use, change it to `3002` in both the SSH command and the browser address. Keep the destination port on `node01` set to `3000`.
 
-On your local computer, open:
-
-```text
-http://localhost:3001
-```
-
-Your browser connects to the remote Grafana service through the encrypted SSH connection.
-
-If port `3001` is already in use, choose another available local port and update the browser address accordingly.
-
-**Note:** Remote SSH tunnelling requires SSH access to the host computer and network connectivity from that host to the controller VM.
+When you finish, press **Ctrl+C** in the laptop terminal to close the tunnel.
 
 ### 6.6 Optional: check Prometheus directly
 
